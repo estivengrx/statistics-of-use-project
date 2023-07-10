@@ -60,6 +60,9 @@ target/
 .env
 
 
+#security_copy_of_the_data
+copia_seguridad_datos/
+
 # Pycharm
 .idea
 
