@@ -59,6 +59,8 @@ target/
 # DotEnv configuration
 .env
 
+#security_copy_of_the_data
+copia_seguridad_datos/
 
 # Pycharm
 .idea
@@ -83,5 +85,5 @@ target/
 # Mypy cache
 .mypy_cache/
 
-statistics_of_use_database_log.ldf
-statistics_of_use_database.mdf
+#Database
+database/
