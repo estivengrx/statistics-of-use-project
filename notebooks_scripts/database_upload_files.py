@@ -29,10 +29,11 @@ def upload_csv_to_sql_server(csv_folder_path, database_name, server_name, userna
 
         print(f"Uploaded {csv_file} to {database_name}.{table_name}")
 
-csv_folder_path = "D:/Estiven/Datos/Proyectos/statistics-of-use-project/data/processed"
-database_name = "statistics_of_use_db"
-server_name = "DESKTOP-8PK64UI"
-username = "main_estiven"
-password = "1040Estiven570.cas1"
+if __name__ == "__main__":
+    csv_folder_path = "D:/Estiven/Datos/Proyectos/statistics-of-use-project/data/processed"
+    database_name = "statistics_of_use_db"
+    server_name = "DESKTOP-8PK64UI"
+    username = "main_estiven"
+    password = "1040Estiven570.cas1"
 
-upload_csv_to_sql_server(csv_folder_path, database_name, server_name, username, password)
+    upload_csv_to_sql_server(csv_folder_path, database_name, server_name, username, password)
