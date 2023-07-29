@@ -1,6 +1,7 @@
 import pandas as pd
+from os import listdir
 
-def read_excel_sheets(file_path):
+def read_excel_sheets(file_path: str ) -> dict:
     """
     Read different sheets of an Excel file into separate dataframes and apply specific transformations.
 
@@ -88,7 +89,7 @@ def read_excel_sheets(file_path):
             dataframe = dataframe[1:].reset_index().rename({'index': 'date'}, axis=1)
 
             # Time transformation to minutes, only for time data, not count data
-            if 'App' in sheet_name:
+            if 'Time' in sheet_name:
                 
                 for col in dataframe.columns:
                     if col != 'date':
@@ -106,6 +107,55 @@ def read_excel_sheets(file_path):
     final_data = {key.lower().replace('plus', 'motorola'): value for key, value in transformed_dataframes.items()}
     return final_data
 
+def transform_dataframe(dataframe: pd.DataFrame, values_greater_than: int) -> pd.DataFrame:
+    """
+    Filter and transform a pandas DataFrame based on the sum of values in each column.
+
+    Parameters:
+        dataframe (pd.DataFrame): The input DataFrame to be processed.
+        values_greater_than (int): The minimum sum value required for a column to be included in the transformed DataFrame.
+
+    Returns:
+        pd.DataFrame: A new DataFrame containing only the 'date' column and the columns whose sum of values is greater than or equal to 'values_greater_than'.
+
+    Example:
+        Consider a DataFrame 'df' with the following data:
+        
+        date       | apples | oranges | bananas
+        ---------------------------------------
+        2023-07-01 | 10     | 5       | 12
+        2023-07-02 | 15     | 8       | 5
+        2023-07-03 | 20     | 4       | 9
+        
+        Calling 'transform_dataframe(df, 30)' will result in the following DataFrame:
+
+        date       | apples | bananas
+        -----------------------------
+        2023-07-01 | 10     | 12
+        2023-07-02 | 15     | 5
+        2023-07-03 | 20     | 9
+
+        The 'oranges' column is excluded because the sum of its values (5 + 8 + 4) is less than 30.
+    """
+    
+    data_copy = dataframe.copy()
+
+    #packing the name of columns and sums in a dictionary to use in further codes
+    dictionary_sums = {}
+    for column in data_copy:
+        if (column != 'date') and \
+           (sum(data_copy[column]) >= values_greater_than):
+            
+            dictionary_sums[column] = sum(data_copy[column])
+
+    names_of_columns_to_stay = [column_name for column_name in dictionary_sums.keys()]
+    names_of_columns_to_stay.insert(0, 'date')
+
+    #filtering dataframe
+    transformed_dataframe = data_copy[names_of_columns_to_stay]
+    
+    return transformed_dataframe
+
 if __name__ == "__main__":
     # Replace the file_path with the actual path to your Excel file
     excel_file_path = "D:/Estiven/Datos/Proyectos/statistics-of-use-project/data/raw/StayFree Export - Total Usage - 6_24_23 (1).xls"
@@ -114,4 +164,28 @@ if __name__ == "__main__":
     # Save the dataframes into csv files
     path_final_files = "D:/Estiven/Datos/Proyectos/statistics-of-use-project/data/processed/"
     for key, values in transformed.items():
-        values.to_csv(path_final_files + key + '.csv', index=None)
+        values.to_csv(path_final_files + key + '.csv', index=None, sep=';')
+
+    # Transformations in the datasets to be sent to database
+    dir_list = listdir(path_final_files)
+    dir_list
+
+    for file in dir_list:
+        if ('device' not in file) and ('git' not in file):
+            file_path = f'D:/Estiven/Datos/Proyectos/statistics-of-use-project/data/processed/{file}'
+            data = pd.read_csv(file_path,
+                            delimiter=';',
+                            parse_dates=['date'])
+            
+            data_transformed = transform_dataframe(data, 100)
+            data_transformed = data_transformed.set_index('date')
+            data_transformed.sort_values(by='date', ascending=True, inplace=True)
+            data_transformed = data_transformed.drop_duplicates()
+            data_transformed = data_transformed.reset_index()
+
+            # Saving the files as desired
+            export_path = f'D:/Estiven/Datos/Proyectos/statistics-of-use-project/data/processed/{file}'
+            data_transformed.to_csv(export_path, 
+                                    sep=';',
+                                    index=False,
+                                    date_format='%Y-%m-%d')
