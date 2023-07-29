@@ -112,6 +112,6 @@ if __name__ == "__main__":
     transformed = read_excel_sheets(excel_file_path)
 
     # Save the dataframes into csv files
-    path_final_files = "D:/Estiven/Datos/Proyectos/statistics-of-use-project/data/tests/"
+    path_final_files = "D:/Estiven/Datos/Proyectos/statistics-of-use-project/data/processed/"
     for key, values in transformed.items():
         values.to_csv(path_final_files + key + '.csv', index=None)

@@ -87,6 +87,7 @@ copia_seguridad_datos/
 
 #Database
 database/
+notebooks_scripts/database_pass.txt
 
 # tests
 data/tests/

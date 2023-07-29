@@ -34,6 +34,9 @@ if __name__ == "__main__":
     database_name = "statistics_of_use_db"
     server_name = "DESKTOP-8PK64UI"
     username = "main_estiven"
-    password = "1040Estiven570.cas1"
+
+    password_file_path = "D:/Estiven/Datos/Proyectos/statistics-of-use-project/notebooks_scripts/database_pass.txt"
+    with open(password_file_path, "r") as file:
+        password = file.read().strip()
 
     upload_csv_to_sql_server(csv_folder_path, database_name, server_name, username, password)
