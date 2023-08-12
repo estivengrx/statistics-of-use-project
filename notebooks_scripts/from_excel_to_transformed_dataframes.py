@@ -182,6 +182,7 @@ if __name__ == "__main__":
             data_transformed.sort_values(by='date', ascending=True, inplace=True)
             data_transformed = data_transformed.drop_duplicates()
             data_transformed = data_transformed.reset_index()
+            data_transformed['total_usage'] = data_transformed.sum(axis=1, numeric_only=True)
 
             # Saving the files as desired
             export_path = f'D:/Estiven/Datos/Proyectos/statistics-of-use-project/data/processed/{file}'

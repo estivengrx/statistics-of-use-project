@@ -1,6 +1,8 @@
 import os
 import pandas as pd
+
 from sqlalchemy import create_engine
+from sqlalchemy.types import Date
 
 def upload_csv_to_sql_server(csv_folder_path, database_name, server_name, username, password):
     # Create the connection string for SQL Server
@@ -25,8 +27,10 @@ def upload_csv_to_sql_server(csv_folder_path, database_name, server_name, userna
         df.to_sql(table_name, 
                   con=engine, 
                   if_exists='replace',
-                  index=False)
-
+                  index=False,
+                  dtype={'date': Date()}  # Set 'date' column as datetime dtype in the database
+                  )
+        
         print(f"Uploaded {csv_file} to {database_name}.{table_name}")
 
 if __name__ == "__main__":
