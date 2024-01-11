@@ -1,7 +1,7 @@
 import pandas as pd
-from os import listdir
+from os import listdir, remove, path
 
-def read_excel_sheets(file_path: str ) -> dict:
+def read_excel_sheets(file_path: str) -> dict:
     """
     Read different sheets of an Excel file into separate dataframes and apply specific transformations.
 
@@ -104,7 +104,7 @@ def read_excel_sheets(file_path: str ) -> dict:
             transformed_dataframes[sheet_name_appropriate + '_motorola'] = dataframe
 
     # Format the sheet names for the transformed dataframe's key
-    final_data = {key.lower().replace('plus', 'motorola'): value for key, value in transformed_dataframes.items()}
+    final_data = {key.lower().replace('plus', 'motorola').replace('extension', 'edge'): value for key, value in transformed_dataframes.items()}
     return final_data
 
 def transform_dataframe(dataframe: pd.DataFrame, values_greater_than: int) -> pd.DataFrame:
@@ -117,30 +117,11 @@ def transform_dataframe(dataframe: pd.DataFrame, values_greater_than: int) -> pd
 
     Returns:
         pd.DataFrame: A new DataFrame containing only the 'date' column and the columns whose sum of values is greater than or equal to 'values_greater_than'.
-
-    Example:
-        Consider a DataFrame 'df' with the following data:
-        
-        date       | apples | oranges | bananas
-        ---------------------------------------
-        2023-07-01 | 10     | 5       | 12
-        2023-07-02 | 15     | 8       | 5
-        2023-07-03 | 20     | 4       | 9
-        
-        Calling 'transform_dataframe(df, 30)' will result in the following DataFrame:
-
-        date       | apples | bananas
-        -----------------------------
-        2023-07-01 | 10     | 12
-        2023-07-02 | 15     | 5
-        2023-07-03 | 20     | 9
-
-        The 'oranges' column is excluded because the sum of its values (5 + 8 + 4) is less than 30.
     """
     
     data_copy = dataframe.copy()
 
-    #packing the name of columns and sums in a dictionary to use in further codes
+    # Packing the name of columns and sums in a dictionary to use in further codes
     dictionary_sums = {}
     for column in data_copy:
         if (column != 'date') and \
@@ -151,42 +132,50 @@ def transform_dataframe(dataframe: pd.DataFrame, values_greater_than: int) -> pd
     names_of_columns_to_stay = [column_name for column_name in dictionary_sums.keys()]
     names_of_columns_to_stay.insert(0, 'date')
 
-    #filtering dataframe
+    # Filtering dataframe
     transformed_dataframe = data_copy[names_of_columns_to_stay]
     
     return transformed_dataframe
 
 if __name__ == "__main__":
-    # Replace the file_path with the actual path to your Excel file
-    excel_file_path = "D:/Estiven/Datos/Proyectos/statistics-of-use-project/data/raw/StayFree Export - Total Usage - 6_24_23 (1).xls"
-    transformed = read_excel_sheets(excel_file_path)
 
-    # Save the dataframes into csv files
-    path_final_files = "D:/Estiven/Datos/Proyectos/statistics-of-use-project/data/processed/"
-    for key, values in transformed.items():
-        values.to_csv(path_final_files + key + '.csv', index=None, sep=';')
+    # Replace the file_path with the actual path to the Excel file
+    raw_files_path = "D:/Estiven/Datos/Proyectos/statistics-of-use-project/data/raw/"
+    processed_files_path = "D:/Estiven/Datos/Proyectos/statistics-of-use-project/data/processed/"
 
-    # Transformations in the datasets to be sent to database
-    dir_list = listdir(path_final_files)
-    dir_list
+    for raw_file in listdir(raw_files_path):
+        if raw_file.endswith('.xls'):
+            full_path = path.join(raw_files_path, raw_file)
+            file_keyword = full_path.split('/')[-1].split('.')[0].split('_')[0]
+            folder_name = f'{full_path.split("/")[-1].split(".")[0]}' + '_'
+            transformed = read_excel_sheets(full_path)
 
-    for file in dir_list:
-        if ('device' not in file) and ('git' not in file):
-            file_path = f'D:/Estiven/Datos/Proyectos/statistics-of-use-project/data/processed/{file}'
-            data = pd.read_csv(file_path,
-                            delimiter=';',
-                            parse_dates=['date'])
-            
-            data_transformed = transform_dataframe(data, 100)
-            data_transformed = data_transformed.set_index('date')
-            data_transformed.sort_values(by='date', ascending=True, inplace=True)
-            data_transformed = data_transformed.drop_duplicates()
-            data_transformed = data_transformed.reset_index()
-            data_transformed['total_usage'] = data_transformed.sum(axis=1, numeric_only=True)
+            # Save the dataframes into csv files
+            for key, values in transformed.items():
+                output_file = (
+                    f'{processed_files_path}{folder_name}{file_keyword}_{key}.csv'
+                    if 'device' in key
+                    else f'{processed_files_path}{file_keyword}_{key}.csv'
+                )
+                values.to_csv(output_file, index=None, sep=';')
 
-            # Saving the files as desired
-            export_path = f'D:/Estiven/Datos/Proyectos/statistics-of-use-project/data/processed/{file}'
-            data_transformed.to_csv(export_path, 
-                                    sep=';',
-                                    index=False,
-                                    date_format='%Y-%m-%d')
+            # Transformations in the datasets
+            dir_list = listdir(processed_files_path)
+
+            for file in dir_list:
+                if 'device' not in file and 'git' not in file and file_keyword in file:
+                    file_path = f'{processed_files_path}{file}'
+                    data = pd.read_csv(file_path, delimiter=';', parse_dates=['date'])
+                    data_transformed = transform_dataframe(data, 100)
+                    data_transformed = data_transformed.set_index('date')
+                    data_transformed.sort_values(by='date', ascending=True, inplace=True)
+                    data_transformed = data_transformed.drop_duplicates()
+                    data_transformed = data_transformed.reset_index()
+                    data_transformed['total_usage'] = data_transformed.sum(axis=1, numeric_only=True)
+
+                    # Saving the files as desired
+                    export_path = f'{processed_files_path}{folder_name}{file}'
+                    data_transformed.to_csv(
+                        export_path, sep=';', index=False, date_format='%Y-%m-%d'
+                    )
+                    remove(file_path)
