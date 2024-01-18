@@ -33,7 +33,7 @@ def device_unlocks_unification(data_directory: str):
     
     # Save the consolidated DataFrame to a CSV file
     output_filepath = f'{data_directory}device_unlocks_motorola.csv'
-    merged_df.to_csv(output_filepath, index=False)
+    merged_df.to_csv(output_filepath, index=False, sep=';')
 
     # Remove the original device files
     for device_file in device_files:
