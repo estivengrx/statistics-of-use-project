@@ -1,7 +1,8 @@
 import pandas as pd
 from os import listdir, path, remove
+from functools import reduce
 
-def device_unlocks_concatenation(data_directory: str) -> pd.DataFrame:
+def device_unlocks_unification(data_directory: str):
     """
     Concatenates device unlock data from multiple files in the specified directory.
 
@@ -18,22 +19,68 @@ def device_unlocks_concatenation(data_directory: str) -> pd.DataFrame:
     """
 
     file_list = listdir(data_directory) 
-    device_files = [file for file in file_list if 'device' in file]  # Device unlocks data
+    device_files = [file for file in file_list if 'device' in file] # Files filter
 
-    merged_df = pd.DataFrame()  # Empty dataframe
+    merged_df = pd.DataFrame()
 
     # Iterate over the device files and merge them on the 'date' column
     for file in device_files:
         file_path = path.join(data_directory, file)
         df = pd.read_csv(file_path, sep=';', parse_dates=['date'])
 
+        # Concatenate the current DataFrame to the merged DataFrame
         merged_df = pd.concat([merged_df, df[['date', 'Device Unlocks']]], axis=0)
     
-    merged_df.to_csv(f'{data_directory}device_unlocks.csv', index=False)
+    # Save the consolidated DataFrame to a CSV file
+    output_filepath = f'{data_directory}device_unlocks_motorola.csv'
+    merged_df.to_csv(output_filepath, index=False)
 
+    # Remove the original device files
     for device_file in device_files:
-        remove(f'{data_directory}{device_file}')
+        remove(path.join(data_directory, device_file))
+
+def data_unification_from_different_dates(data_directory: str):
+    """
+    Unify data files with different dates based on specified keywords.
+
+    Parameters:
+    - data_directory (str): The directory containing the data files.
+
+    The function reads data files from the specified directory, identifies relevant keywords,
+    and merges the files with the same keyword into a unified DataFrame. It then saves the
+    unified DataFrame to a new CSV file and removes the original files.
+
+    Note: This function assumes that the files are in CSV format and use ';' as the separator.
+    """
+    file_list = [file for file in listdir(data_directory) if 'device' not in file]
+
+    keywords = [
+        'app_usage_count_motorola', 'app_usage_time_motorola', 
+        'web_usage_count_chrome', 'web_usage_time_chrome',
+        'web_usage_count_edge', 'web_usage_time_edge',
+        'web_usage_count_motorola', 'web_usage_time_motorola'
+    ]
+
+    # Process files for each keyword
+    for keyword in keywords:
+        # Select files that contain the current keyword
+        files_with_keyword_list = [
+            pd.read_csv(f'{data_directory}{filter_file}', sep=';') for filter_file in file_list if keyword in filter_file
+        ]
+
+        # Merge selected files into a unified DataFrame and fill NaN values with 0
+        final_dataframe_unified = reduce(lambda left, right: pd.merge(left, right, how='outer'), files_with_keyword_list).fillna(0)
+
+        # Save the unified DataFrame to a new CSV file
+        output_filepath = f'D:/Estiven/Datos/Proyectos/statistics-of-use-project/data/processed/{keyword}.csv'
+        final_dataframe_unified.to_csv(output_filepath, index=False, sep=';')
+
+        # Remove files with the current keyword from the original file list
+        files_to_remove = [x for x in file_list if keyword in x]   
+        for not_unified_file in files_to_remove:
+            remove(f'{data_directory}{not_unified_file}')
 
 if __name__ == "__main__":
     data_directory = 'D:/Estiven/Datos/Proyectos/statistics-of-use-project/data/processed/'
-    device_unlocks_concatenation(data_directory)
+    data_unification_from_different_dates(data_directory)
+    device_unlocks_unification(data_directory)

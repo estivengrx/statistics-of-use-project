@@ -46,7 +46,6 @@ def read_excel_sheets(file_path: str) -> dict:
                 group.columns = group.iloc[0]
 
                 # Eliminate duplicated columns in the dataframe
-                duplicated_columns = group.columns[group.columns.duplicated()]
                 group = group.loc[:, ~group.columns.duplicated()]
 
                 # Drop the first row since it is now the header
@@ -83,7 +82,6 @@ def read_excel_sheets(file_path: str) -> dict:
             dataframe = dataframe.iloc[:-4].T
             dataframe.columns = dataframe.iloc[0]
 
-            duplicated_columns = dataframe.columns[dataframe.columns.duplicated()]
             dataframe = dataframe.loc[:, ~dataframe.columns.duplicated()]
 
             dataframe = dataframe[1:].reset_index().rename({'index': 'date'}, axis=1)
