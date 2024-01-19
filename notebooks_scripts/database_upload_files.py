@@ -28,7 +28,7 @@ def upload_csv_to_sql_server(csv_folder_path, database_name, server_name, userna
                   con=engine, 
                   if_exists='replace',
                   index=False,
-                  dtype={'date': Date()}  # Set 'date' column as datetime dtype in the database
+                  dtype={'date': Date}  # Set 'date' column as datetime dtype in the database
                   )
         
         print(f"Uploaded {csv_file} to {database_name}.{table_name}")

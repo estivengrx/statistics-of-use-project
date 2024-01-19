@@ -80,7 +80,38 @@ def data_unification_from_different_dates(data_directory: str):
         for not_unified_file in files_to_remove:
             remove(f'{data_directory}{not_unified_file}')
 
+def fill_missing_dates(data_directory: str):
+    """
+    Fills missing dates in CSV files in the specified directory.
+
+    Parameters:
+    - data_directory (str): The path to the directory containing the CSV files.
+
+    This function reads each CSV file in the specified directory into a DataFrame,
+    checks for missing dates in the 'date' column, and if a date is missing, adds a new
+    row with that date and sets all other columns to zero. The DataFrame is then saved
+    back to the CSV file.
+    """
+
+    file_list = [file for file in listdir(data_directory) if file.endswith('.csv')]
+
+    for file in file_list:
+        file_path = path.join(data_directory, file)
+        df = pd.read_csv(file_path, sep=';', parse_dates=['date'])
+
+        df.set_index('date', inplace=True)
+        df = df.resample('D').asfreq()
+
+        if 'device' in file:
+            df.replace({0: float('NaN')}, inplace=True)
+
+        df = df.fillna(method='ffill')  # forward fill to fill based on previous data
+
+        df.reset_index(inplace=True)
+        df.to_csv(file_path, index=False, sep=';')
+
 if __name__ == "__main__":
     data_directory = 'D:/Estiven/Datos/Proyectos/statistics-of-use-project/data/processed/'
     data_unification_from_different_dates(data_directory)
     device_unlocks_unification(data_directory)
+    fill_missing_dates(data_directory)
