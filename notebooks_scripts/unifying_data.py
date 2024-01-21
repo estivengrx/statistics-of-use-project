@@ -34,6 +34,7 @@ def device_unlocks_unification(data_directory: str):
     
     # Save the consolidated DataFrame to a CSV file
     output_filepath = f'{data_directory}device_unlocks_motorola.csv'
+    merged_df['date'] = pd.to_datetime(merged_df['date'])
     merged_df.to_csv(output_filepath, index=False, sep=';')
 
     # Remove the original device files
@@ -74,6 +75,7 @@ def data_unification_from_different_dates(data_directory: str):
 
         # Save the unified DataFrame to a new CSV file
         output_filepath = f'D:/Estiven/Datos/Proyectos/statistics-of-use-project/data/processed/{keyword}.csv'
+        final_dataframe_unified['date'] = pd.to_datetime(final_dataframe_unified['date'])
         final_dataframe_unified.to_csv(output_filepath, index=False, sep=';')
 
         # Remove files with the current keyword from the original file list
@@ -113,6 +115,7 @@ def fill_missing_dates(data_directory: str):
             
             data_manipulated = data_manipulated.fillna(data_manipulated.mean()) # Fill NaN values with the mean of the column
             data_manipulated.reset_index(inplace=True)
+            data_manipulated['date'] = pd.to_datetime(data_manipulated['date'])
             data_manipulated.to_csv(file_path, index=False, sep=';')
 
 if __name__ == "__main__":
