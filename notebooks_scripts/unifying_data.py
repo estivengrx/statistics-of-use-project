@@ -1,4 +1,5 @@
 import pandas as pd
+
 from os import listdir, path, remove
 from functools import reduce
 
@@ -86,29 +87,33 @@ def fill_missing_dates(data_directory: str):
 
     Parameters:
     - data_directory (str): The path to the directory containing the CSV files.
-
-    This function reads each CSV file in the specified directory into a DataFrame,
-    checks for missing dates in the 'date' column, and if a date is missing, adds a new
-    row with that date and sets all other columns to zero. The DataFrame is then saved
-    back to the CSV file.
     """
 
     file_list = [file for file in listdir(data_directory) if file.endswith('.csv')]
 
+    # List of files to be processed for NaN filling
+    files_to_input = ['app_usage_count_motorola.csv', 'app_usage_time_motorola.csv', 'device_unlocks_motorola.csv']
+
     for file in file_list:
         file_path = path.join(data_directory, file)
         df = pd.read_csv(file_path, sep=';', parse_dates=['date'])
-
         df.set_index('date', inplace=True)
-        df = df.resample('D').asfreq()
 
-        if 'device' in file:
-            df.replace({0: float('NaN')}, inplace=True)
+        # Exclude the date "25-06-2023" from the DataFrame, (internal error)
+        problem_25_june = df.query('date != "25-06-2023"').index
+        data_manipulated = df.loc[problem_25_june]
 
-        df = df.fillna(method='ffill')  # forward fill to fill based on previous data
+        # Resample the DataFrame to ensure it has one row for each day
+        data_manipulated = data_manipulated.resample('D').asfreq()
 
-        df.reset_index(inplace=True)
-        df.to_csv(file_path, index=False, sep=';')
+        # If the file is in the list of files to be processed
+        if file in files_to_input: 
+            if 'device' in file:
+                data_manipulated.replace({0: float('NaN')}, inplace=True)
+            
+            data_manipulated = data_manipulated.fillna(data_manipulated.mean()) # Fill NaN values with the mean of the column
+            data_manipulated.reset_index(inplace=True)
+            data_manipulated.to_csv(file_path, index=False, sep=';')
 
 if __name__ == "__main__":
     data_directory = 'D:/Estiven/Datos/Proyectos/statistics-of-use-project/data/processed/'
