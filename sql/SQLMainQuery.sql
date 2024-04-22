@@ -1,4 +1,4 @@
-SELECT ROUND(AVG([SumTotalUsage]), 1) AS AverageUsageHoursThroughDevices
+SELECT ROUND(AVG([SumTotalUsage]), 1) AS AverageUsageMinutesThroughDevices
 FROM (
     SELECT [date], SUM([total_usage]) AS [SumTotalUsage]
     FROM (
