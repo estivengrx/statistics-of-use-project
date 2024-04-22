@@ -142,7 +142,7 @@ if __name__ == "__main__":
     processed_files_path = "D:/Estiven/Datos/Proyectos/statistics-of-use-project/data/processed/"
 
     for raw_file in listdir(raw_files_path):
-        if raw_file.endswith('.xls'):
+        if raw_file.endswith('.xls') or raw_file.endswith('.xlsx'):
             full_path = path.join(raw_files_path, raw_file)
             file_keyword = full_path.split('/')[-1].split('.')[0].split('_')[0]
             folder_name = f'{full_path.split("/")[-1].split(".")[0]}' + '_'
