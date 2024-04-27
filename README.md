@@ -8,7 +8,7 @@ The data is from 10/19/2022 to 04/21/2024.
 The inspiration for this project arises from the increasing need to comprehend and derive meaningful patterns from the vast array of my own device usage data. By delving into the statistics provided by StayFree, we aim to uncover valuable insights that can inform user habits, preferences, and the broader landscape of digital engagement.
 
 ## Key Insights from EDA, (Exploratory Data Analysis), and PowerBi report
-
+![PowerBi report of the data](https://github.com/estivengrx/statistics-of-use-project/blob/main/statistics_of_use_power_bi_model_page-0001.jpg)
 - The most used applications on the phone are WhatsApp, Instagram, YouTube, Chrome, and Spotify, while the most visited websites using the Edge browser are YouTube, Instagram, HBO Max, WhatsApp Web, and ChatGPT.
 
 - The distribution of phone usage time tends to follow a normal distribution, with around 250 minutes being the most common usage duration. In contrast, the distribution of web browser usage time is skewed to the left, indicating fewer instances of prolonged web usage compared to phone usage.
